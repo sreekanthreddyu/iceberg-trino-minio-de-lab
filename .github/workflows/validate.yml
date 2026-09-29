@@ -1,0 +1,25 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject Spark dependencies
+        shell: bash
+        run: |
+          if grep -RniE --exclude-dir=.git --exclude=README.md --exclude=GUIDE.md --exclude=architecture.md 'pyspark|spark-submit|apache spark' .; then
+            echo "Spark runtime dependencies are outside this lab's scope."
+            exit 1
+          fi
+      - name: Compile Python when present
+        shell: bash
+        run: |
+          if find python -type f -name '*.py' -print -quit | grep -q .; then
+            python -m compileall -q python
+          fi
